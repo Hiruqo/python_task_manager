@@ -25,24 +25,51 @@ def show_login_window():
     login_window.resizable(width=False, height=False)
 
     frame = customtkinter.CTkFrame(master=login_window)
-    frame.pack(pady=20, padx=60, fill="both", expand=True)
+    frame.pack(pady=20,
+               padx=60,
+               fill="both",
+               expand=True
+               )
 
-    label = customtkinter.CTkLabel(master=frame, text="Login", font=("Roboto", 24))
-    label.pack(pady=12, padx=10)
+    label = customtkinter.CTkLabel(master=frame,
+                                   text="Login",
+                                   font=("Roboto", 24)
+                                   )
+    label.pack(pady=12,
+               padx=10
+               )
 
-    entry_name = customtkinter.CTkEntry(master=frame, placeholder_text="Username",
-                                        border_width=2, border_color="#ffc857")
-    entry_name.pack(pady=12, padx=10)
+    entry_name = customtkinter.CTkEntry(master=frame,
+                                        placeholder_text="Username",
+                                        border_width=2,
+                                        border_color="#ffc857"
+                                        )
+    entry_name.pack(pady=12,
+                    padx=10
+                    )
 
-    entry_password = customtkinter.CTkEntry(master=frame, placeholder_text="Password", show="*",
-                                            border_width=2, border_color="#ffc857")
-    entry_password.pack(pady=12, padx=10)
+    entry_password = customtkinter.CTkEntry(master=frame,
+                                            placeholder_text="Password",
+                                            show="*",
+                                            border_width=2,
+                                            border_color="#ffc857"
+                                            )
+    entry_password.pack(pady=12,
+                        padx=10
+                        )
 
-    login_button = customtkinter.CTkButton(
-        master=frame, text="login", command=lambda: login(login_window),
-        width=60, border_width=2, border_color="#ffc857",
-        fg_color="#1a1a1a", hover_color="#6e542f", text_color="#ffc857"
-    )
-    login_button.pack(pady=12, padx=10)
+    login_button = customtkinter.CTkButton(master=frame,
+                                           text="login",
+                                           command=lambda: login(login_window),
+                                           width=60,
+                                           border_width=2,
+                                           border_color="#ffc857",
+                                           fg_color="#1a1a1a",
+                                           hover_color="#6e542f",
+                                           text_color="#ffc857"
+                                           )
+    login_button.pack(pady=12,
+                      padx=10
+                      )
 
     login_window.mainloop()
