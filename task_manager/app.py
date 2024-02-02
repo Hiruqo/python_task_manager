@@ -3,6 +3,9 @@ from PIL import Image, ImageTk
 from tkinter import ttk
 from classes import Task
 
+# for voice recording
+import speech_recognition as sr     # pip library
+
 tasks = []  # List to store Task objects
 app_right_frame = None  # Global variable to store the right frame
 
@@ -132,6 +135,118 @@ def edit_task(task, task_combobox, app_frame):
                     )
 
     edit_window.mainloop()
+
+
+def update_description(right_task_description, new_description_entry, voice_window):
+    description_text = new_description_entry.get()
+    right_task_description.delete(0, "end")
+    right_task_description.insert(0, description_text)
+    voice_window.destroy()
+
+
+def voice_recognition(app_frame, task_combobox, right_task_description):
+    global app_right_frame  # Ensure that you use the global variable
+
+    voice_window = customtkinter.CTk()
+    voice_window.geometry("450x300")
+    voice_window.title("Voice Recognition")
+    voice_window.resizable(height=False, width=False)
+
+    edit_label = customtkinter.CTkLabel(master=voice_window,
+                                        text="Enter voice description",
+                                        font=("Roboto", 24)
+                                        )
+    edit_label.pack(pady=(10, 5),
+                    padx=10
+                    )
+
+    new_description_entry = customtkinter.CTkEntry(master=voice_window,
+                                                   placeholder_text="",
+                                                   height=200,
+                                                   width=400,
+                                                   border_width=2,
+                                                   border_color="#ffc875"
+                                                   )
+    new_description_entry.pack(pady=(5, 5),
+                               padx=10
+                               )
+
+    def try_to_say():
+        smaller_window = customtkinter.CTk()
+        smaller_window.geometry("200x100")
+        smaller_window.title("Say something..")
+        smaller_window.resizable(height=False, width=False)
+
+        def voice_recognize_google():
+            recognizer = sr.Recognizer()  # 'recognizer' object start
+
+            with sr.Microphone() as source:  # set microphone peripherial as audio source
+                recognizer.adjust_for_ambient_noise(source, duration=1)  # set the environmental (sound) settings
+                audio = recognizer.listen(source)  # start listening to user's microphone
+
+            try:
+                text = recognizer.recognize_google(audio)  # google cloud tries to detect words
+                return text
+            except sr.UnknownValueError:  # unknown text
+                print("Could not understand audio.")
+                return None
+            except sr.RequestError as e:  # Error code print
+                print(f"Google Speech Recognition request failed: {e}")
+                return None
+
+        voice_text = voice_recognize_google()
+        if voice_text:
+            if "exit" in voice_text.lower():
+                smaller_window.destroy()
+            else:
+                new_description_entry.insert("end", voice_text + " ")
+
+    def cancel_changes():
+        voice_window.destroy()
+
+    listen_btn = customtkinter.CTkButton(master=voice_window,
+                                         text="Listen",
+                                         command=try_to_say,
+                                         border_width=2,
+                                         border_color="#ffc857",
+                                         fg_color="#1a1a1a",
+                                         hover_color="#6e542f",
+                                         text_color="#ffc857"
+                                         )
+    listen_btn.pack(side="left",
+                    pady=(5, 10),
+                    padx=(20, 5)
+                    )
+
+    ok_btn = customtkinter.CTkButton(master=voice_window,
+                                     text="OK",
+                                     command=lambda: update_description(right_task_description, new_description_entry, voice_window),
+                                     border_width=2,
+                                     border_color="#ffc857",
+                                     fg_color="#1a1a1a",
+                                     hover_color="#6e542f",
+                                     text_color="#ffc857"
+                                     )
+    ok_btn.pack(side="left",
+                pady=(5, 10),
+                padx=(5, 5)
+                )
+
+    cancel_btn = customtkinter.CTkButton(master=voice_window,
+                                         text="Cancel",
+                                         command=cancel_changes,
+                                         border_width=2,
+                                         border_color="#ffc857",
+                                         fg_color="#1a1a1a",
+                                         hover_color="#6e542f",
+                                         text_color="#ffc857"
+                                         )
+    cancel_btn.pack(side="left",
+                    pady=(5, 10),
+                    padx=(5, 10)
+                    )
+
+    voice_window.mainloop()
 
 
 def show_selected_task(event, task_combobox, app_frame):
@@ -413,8 +528,28 @@ def show_app_window():
                                              hover_color="#6e542f",
                                              text_color="#ffc857"
                                              )
-    right_task_btn.pack(pady=(5, 0),
-                        padx=10
+    right_task_btn.pack(pady=(5, 10),
+                        padx=(170, 5),
+                        side="left"
                         )
+
+    voice_btn = customtkinter.CTkButton(master=app_right_frame,
+                                        text="Voice+",
+                                        # command=lambda: voice_recognition(app_frame,
+                                        #                                   task_combobox,
+                                        #                                   right_task_description
+                                        #                                   ),
+                                        width=100,
+                                        border_width=2,
+                                        corner_radius=100,
+                                        border_color="#ffc857",
+                                        fg_color="#1a1a1a",
+                                        hover_color="#6e542f",
+                                        text_color="#ffc857"
+                                        )
+    voice_btn.pack(pady=(5, 10),
+                   padx=(5, 10),
+                   side="left"
+                   )
 
     app_window.mainloop()
