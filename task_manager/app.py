@@ -1,13 +1,20 @@
+# app.py
 import customtkinter
-from PIL import Image, ImageTk
 from tkinter import ttk
 from classes import Task
+import pyodbc
+from PIL import Image, ImageTk
+import speech_recognition as sr
 
-# for voice recording
-import speech_recognition as sr     # pip library
+tasks = []
+app_right_frame = None
+conn = None
 
-tasks = []  # List to store Task objects
-app_right_frame = None  # Global variable to store the right frame
+
+def initialize_database():
+    conn_str = 'DRIVER={SQL Server};SERVER=DESKTOP-HGV327J\\SQLEXPRESS;DATABASE=TaskDB;Trusted_Connection=yes;'
+    connection = pyodbc.connect(conn_str)
+    return connection
 
 
 def logout(app_window):
@@ -42,10 +49,12 @@ def show_warning(message):
     war_wind.mainloop()
 
 
-def add_task(task_combobox, right_task_name, right_task_description):
-    global tasks  # Ensure that you use the global variable
+def add_task(task_combobox, right_task_name, right_task_description, user_id):
+    global tasks, conn  # Ensure that you use the global variables
+
     task_name = right_task_name.get()
     task_description = right_task_description.get()
+
     if len(task_name) > 21 and len(task_description) > 250:
         show_warning("The title and description are too long!")
     elif len(task_name) > 21:
@@ -56,6 +65,13 @@ def add_task(task_combobox, right_task_name, right_task_description):
         if task_name:
             new_task = Task(title=task_name, description=task_description)
             tasks.append(new_task)
+
+            # Insert the new task into the database
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO Tasks (UserID, Title, Description) VALUES (?, ?, ?)",
+                           (user_id, task_name, task_description))
+            conn.commit()
+
             task_combobox["values"] = tuple(task.title for task in tasks)
             right_task_name.delete(0, "end")  # Clear the entry after adding the task
             right_task_description.delete(0, "end")  # Clear the entry after adding the task
@@ -206,7 +222,6 @@ def voice_recognition(app_frame, task_combobox, right_task_description):
 
     listen_btn = customtkinter.CTkButton(master=voice_window,
                                          text="Listen",
-                                         command=try_to_say,
                                          border_width=2,
                                          border_color="#ffc857",
                                          fg_color="#1a1a1a",
@@ -220,7 +235,10 @@ def voice_recognition(app_frame, task_combobox, right_task_description):
 
     ok_btn = customtkinter.CTkButton(master=voice_window,
                                      text="OK",
-                                     command=lambda: update_description(right_task_description, new_description_entry, voice_window),
+                                     command=lambda: update_description(right_task_description,
+                                                                        new_description_entry,
+                                                                        voice_window
+                                                                        ),
                                      border_width=2,
                                      border_color="#ffc857",
                                      fg_color="#1a1a1a",
@@ -391,8 +409,9 @@ def reset_right_frame(task_combobox, app_frame):
     app_right_frame = new_right_frame
 
 
-def show_app_window():
-    global app_right_frame  # Ensure that you use the global variable
+def show_app_window(user_id):
+    global conn, app_right_frame, tasks  # Ensure that you use the global variable
+    conn = initialize_database()
     app_window = customtkinter.CTk()
     app_window.geometry("800x600")
     app_window.title("App Window")
@@ -518,7 +537,8 @@ def show_app_window():
                                              text="Add Task",
                                              command=lambda: add_task(task_combobox,
                                                                       right_task_name,
-                                                                      right_task_description
+                                                                      right_task_description,
+                                                                      user_id
                                                                       ),
                                              width=100,
                                              border_width=2,
@@ -548,8 +568,19 @@ def show_app_window():
                                         text_color="#ffc857"
                                         )
     voice_btn.pack(pady=(5, 10),
-                   padx=(5, 10),
+                   padx=(5, 5),
                    side="left"
                    )
+
+    # Fetch tasks for the specific user from the database
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Tasks WHERE UserID = ?", (user_id,))
+    fetched_tasks = cursor.fetchall()
+
+    # Populate tasks list with the fetched tasks
+    tasks = [Task(title=row.Title, description=row.Description) for row in fetched_tasks]
+
+    # Populate task_combobox with task titles
+    task_combobox["values"] = tuple(task.title for task in tasks)
 
     app_window.mainloop()

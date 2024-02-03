@@ -1,22 +1,37 @@
+# login.py
 import customtkinter
+import pyodbc
+from app import show_app_window
 
 
-def login_correct(login_window):
+def login_correct(login_window, user_id):
     login_window.destroy()
-    from app import show_app_window
-    show_app_window()
+    show_app_window(user_id)
 
 
-def login(login_window):
+def login(login_window, conn, login, password):
     try:
-        login_correct(login_window)
+        # Add code to check login credentials and get user ID from the database
+        user_id = check_login_credentials(conn, login, password)
+        if user_id is not None:
+            login_correct(login_window, user_id)
+        else:
+            # Show a warning or handle incorrect login
+            pass
     except Exception as ex:
         print(f"An exception of type {type(ex).__name__} occurred: {ex}")
     else:
         print("No exception occurred.")
 
 
-def show_login_window():
+def check_login_credentials(conn, login, password):
+    cursor = conn.cursor()
+    cursor.execute("SELECT UserID FROM LoginTab WHERE UserLogin = ? AND UserPassword = ?", (login, password))
+    row = cursor.fetchone()
+    return row[0] if row else None
+
+
+def show_login_window(conn):
     login_window = customtkinter.CTk()
     login_window.geometry("450x260")
     login_window.title("Task Manager")
@@ -60,7 +75,7 @@ def show_login_window():
 
     login_button = customtkinter.CTkButton(master=frame,
                                            text="login",
-                                           command=lambda: login(login_window),
+                                           command=lambda: login(login_window, conn, entry_name.get(), entry_password.get()),
                                            width=60,
                                            border_width=2,
                                            border_color="#ffc857",
