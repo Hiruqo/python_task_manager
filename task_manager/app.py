@@ -20,7 +20,7 @@ def initialize_database():
 def logout(app_window):
     app_window.destroy()
     from login import show_login_window
-    show_login_window()
+    show_login_window(conn)
 
 
 def show_warning(message):
