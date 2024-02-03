@@ -1,6 +1,6 @@
 # python_task_manager
 Python proj. that helps the user with tasks management
-The project look is placed in 'imgs' file where you acn find pictures of the project's fragments
+The project look is placed in 'imgs' file where you can find pictures of the project's fragments
 
 
 The app is connecting SQL databases, python oop and python GUI library.
