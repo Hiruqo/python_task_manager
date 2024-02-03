@@ -75,7 +75,11 @@ def show_login_window(conn):
 
     login_button = customtkinter.CTkButton(master=frame,
                                            text="login",
-                                           command=lambda: login(login_window, conn, entry_name.get(), entry_password.get()),
+                                           command=lambda: login(login_window,
+                                                                 conn,
+                                                                 entry_name.get(),
+                                                                 entry_password.get()
+                                                                 ),
                                            width=60,
                                            border_width=2,
                                            border_color="#ffc857",
